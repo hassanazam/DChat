@@ -1,3 +1,4 @@
+##### Still in development
 # DChat
 ## Android SocialNetwork Chatting Application
 #### This project is made in semester vacations to improve and practice Android Development :)
