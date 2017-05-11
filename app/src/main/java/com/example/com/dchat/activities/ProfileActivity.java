@@ -1,5 +1,6 @@
 package com.example.com.dchat.activities;
 
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -16,9 +17,12 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.example.com.dchat.R;
+import com.example.com.dchat.dialogs.ChangePasswordDialog;
 import com.example.com.dchat.infrastructure.User;
+import com.example.com.dchat.services.Account;
 import com.example.com.dchat.views.MainNavDrawer;
 import com.soundcloud.android.crop.Crop;
+import com.squareup.otto.Subscribe;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -139,12 +143,20 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
                     .output(tempFileUri)
                     .start(this);
         } else if (requestCode == Crop.REQUEST_CROP) {
-            // todo : Send tempfileUri to server
-            avatarView.setImageResource(0);
-            avatarView.setImageURI(Uri.fromFile(tempOutputFile));
+
+            avatarProgressView.setVisibility(View.VISIBLE);
+            bus.post(new Account.ChangeAvatarRequest(Uri.fromFile(tempOutputFile)));
+
+
         }
 
 
+    }
+
+    @Subscribe
+    public void onAvatarUpdated(Account.ChangeAvatarResponse response) {
+        avatarProgressView.setVisibility(View.GONE);
+        //todo: handle errors
     }
 
     @Override
@@ -161,6 +173,13 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         if(itemid == R.id.activity_profile_menuEdit) {
             changeState(STATUS_EDITING);
             return  true;
+        } else if (itemid == R.id.activity_profile_menuChangePassword) {
+            FragmentTransaction transaction =
+                    getFragmentManager().beginTransaction().addToBackStack(null);
+
+            ChangePasswordDialog dialog = new ChangePasswordDialog();
+            dialog.show(transaction, null);
+            return true;
         }
 
         return false;
@@ -182,7 +201,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
                 editProfileActionMode = null;
             }
 
-        }else if (state == STATUS_EDITING) {
+        }  else if (state == STATUS_EDITING) {
 
             displayNameText.setEnabled(true);
             emailText.setEnabled(true);
@@ -199,8 +218,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             getMenuInflater().inflate(R.menu.activity_profile_edit, menu);
-
-            return false;
+            return true;
         }
 
         @Override

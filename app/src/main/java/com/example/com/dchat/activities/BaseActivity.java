@@ -11,20 +11,32 @@ import android.view.View;
 import com.example.com.dchat.R;
 import com.example.com.dchat.infrastructure.DChatApplication;
 import com.example.com.dchat.views.NavDrawer;
+import com.squareup.otto.Bus;
 
 public abstract class BaseActivity extends AppCompatActivity{
     protected DChatApplication application;
     protected Toolbar toolbar;
     protected NavDrawer navDrawer;
     protected boolean isTablet;
+    protected Bus bus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         application = (DChatApplication) getApplication();
+        bus = application.getBus();
+
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         isTablet = (metrics.widthPixels / metrics.density ) >= 600;
+
+        bus.register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        bus.unregister(this);
     }
 
     @Override
