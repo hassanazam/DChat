@@ -270,7 +270,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
 
             if(itemId == R.id.activity_profile_edit_menuDone) {
 
-                setProgressBarVisibile(true);
+                setProgressBarVisible(true);
                 changeState(STATUS_VIEWING);
 
                 bus.post(new Account.UpdateProfileRequest(

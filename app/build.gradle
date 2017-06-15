@@ -17,6 +17,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        inmemory {
+            applicationId "com.example.com.dchat.inmemory"
+        }
+
+        live {
+            applicationId "com.example.com.dchat"
+        }
+    }
 }
 
 dependencies {
