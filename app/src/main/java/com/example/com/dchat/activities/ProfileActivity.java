@@ -1,6 +1,8 @@
 package com.example.com.dchat.activities;
 
+import android.app.Dialog;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -13,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.example.com.dchat.R;
@@ -36,6 +37,8 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
 
     private static final String BUNDLE_STATE = "BUNDLE_STATE";
 
+    private static boolean isProgressBarVisible;
+
     private int currentState;
     private EditText displayNameText;
     private EditText emailText;
@@ -43,8 +46,10 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
     private ActionMode editProfileActionMode;
 
     private ImageView avatarView;
-    private View avatarProgressView;
+    private View avatarProgressFrame;
     private File tempOutputFile;
+
+    private Dialog progressDialog;
 
     @Override
     protected void onDChatCreate(Bundle savedInstanceState) {
@@ -62,7 +67,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         }
 
         avatarView = (ImageView) findViewById(R.id.activity_profile_avatar);
-        avatarProgressView = findViewById(R.id.activity_profile_avatarProgressFrame);
+        avatarProgressFrame = findViewById(R.id.activity_profile_avatarProgressFrame);
         changeAvatarButton = findViewById(R.id.activity_profile_changeAvatar);
         displayNameText = (EditText) findViewById(R.id.activity_profile_displayName);
         emailText = (EditText) findViewById(R.id.activity_profile_email);
@@ -71,7 +76,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         avatarView.setOnClickListener(this);
         changeAvatarButton.setOnClickListener(this);
 
-        avatarProgressView.setVisibility(View.GONE);
+        avatarProgressFrame.setVisibility(View.GONE);
 
         User user = application.getAuth().getUser();
         getSupportActionBar().setTitle(user.getDisplayName());
@@ -83,6 +88,9 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         } else {
           changeState(savedInstanceState.getInt(BUNDLE_STATE));
         }
+
+        if(isProgressBarVisible)
+            setProgressBarVisible(true);
     }
 
     @Override
@@ -144,10 +152,8 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
                     .start(this);
         } else if (requestCode == Crop.REQUEST_CROP) {
 
-            avatarProgressView.setVisibility(View.VISIBLE);
+            avatarProgressFrame.setVisibility(View.VISIBLE);
             bus.post(new Account.ChangeAvatarRequest(Uri.fromFile(tempOutputFile)));
-
-
         }
 
 
@@ -155,8 +161,40 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
 
     @Subscribe
     public void onAvatarUpdated(Account.ChangeAvatarResponse response) {
-        avatarProgressView.setVisibility(View.GONE);
-        //todo: handle errors
+        avatarProgressFrame.setVisibility(View.GONE);
+
+        if(!response.didSucceed())
+            response.showErrorToast(this);
+
+
+    }
+
+    @Subscribe
+    public void onProfileUpdated(Account.UpdateProfileResponse response) {
+        if(!response.didSucceed()) {
+            response.showErrorToast(this);
+            changeState(STATUS_EDITING);
+        }
+
+        displayNameText.setError(response.getPropertyError("displayName"));
+        emailText.setError(response.getPropertyError("email"));
+        setProgressBarVisible(false);
+
+    }
+
+    private void setProgressBarVisible(boolean visible) {
+        if (visible) {
+            progressDialog = new ProgressDialog.Builder(this)
+                    .setTitle("Updating profile")
+                    .setCancelable(false)
+                    .show();
+        }
+        else if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+
+        isProgressBarVisible = visible;
     }
 
     @Override
@@ -231,13 +269,14 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
             int itemId = item.getItemId();
 
             if(itemId == R.id.activity_profile_edit_menuDone) {
-                //TODO : send request to update name and email
 
-                User user = application.getAuth().getUser();
-                user.setDisplayName(displayNameText.getText().toString());
-                user.setEmail(emailText.getText().toString());
-
+                setProgressBarVisibile(true);
                 changeState(STATUS_VIEWING);
+
+                bus.post(new Account.UpdateProfileRequest(
+                        displayNameText.getText().toString(),
+                        emailText.getText().toString()));
+
                 return true;
             }
 

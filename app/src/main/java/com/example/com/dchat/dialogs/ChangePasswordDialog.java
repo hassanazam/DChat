@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.com.dchat.R;
+import com.example.com.dchat.services.Account;
+import com.squareup.otto.Subscribe;
 
 public class ChangePasswordDialog extends BaseDialogFragment implements View.OnClickListener {
 
@@ -39,9 +41,27 @@ public class ChangePasswordDialog extends BaseDialogFragment implements View.OnC
 
     @Override
     public void onClick(View v) {
-        // TODO : send new password to server
+        bus.post(new Account.ChangePasswordRequest(
+                currentPassword.getText().toString(),
+                newPassword.getText().toString(),
+                confirmNewPassword.getText().toString()));
 
-        Toast.makeText(getActivity(), "Password Updated", Toast.LENGTH_SHORT).show();
-        dismiss();
+    }
+
+    @Subscribe
+    public void passwordChanged(Account.ChangePasswordResponse response) {
+        if( response.didSucceed()) {
+            Toast.makeText(getActivity(), "Password Updated", Toast.LENGTH_LONG).show();
+            dismiss();
+
+            application.getAuth().getUser().setHasPassword(true);
+            return;
+        }
+
+        currentPassword.setError(response.getPropertyError("currentPassword"));
+        newPassword.setError(response.getPropertyError("newPassword"));
+        confirmNewPassword.setError(response.getPropertyError("confirmNewPassword"));
+
+        response.showErrorToast(getActivity());
     }
 }
