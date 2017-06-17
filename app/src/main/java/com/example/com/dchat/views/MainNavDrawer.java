@@ -12,6 +12,8 @@ import com.example.com.dchat.activities.MainActivity;
 import com.example.com.dchat.activities.ProfileActivity;
 import com.example.com.dchat.activities.SentMessagesActivity;
 import com.example.com.dchat.infrastructure.User;
+import com.example.com.dchat.services.Account;
+import com.squareup.otto.Subscribe;
 
 public class MainNavDrawer extends NavDrawer {
     private final TextView displayNameText;
@@ -39,5 +41,11 @@ public class MainNavDrawer extends NavDrawer {
         displayNameText.setText(loggedInUser.getDisplayName());
 
         //todo: change avatar image to avatarurl from loggedinUser
+    }
+
+    @Subscribe
+    public void onUserDetailsUpdated(Account.UserDetailsUpdatedEvent event) {
+        //todo: update avatarUrl
+        displayNameText.setText(event.user.getDisplayName());
     }
 }

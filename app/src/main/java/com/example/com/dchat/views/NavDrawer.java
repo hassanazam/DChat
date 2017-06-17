@@ -45,6 +45,12 @@ public class NavDrawer {
             }
         });
 
+        activity.getDChatApplication().getBus().register(this);
+
+    }
+
+    public void destroy() {
+        activity.getDChatApplication().getBus().unregister(this);
     }
 
 

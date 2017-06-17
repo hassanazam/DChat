@@ -197,6 +197,11 @@ public class ProfileActivity extends BaseAuthenticatedActivity implements View.O
         isProgressBarVisible = visible;
     }
 
+    @Subscribe
+    public void onUserDetailsUpdated(Account.UserDetailsUpdatedEvent event) {
+        getSupportActionBar().setTitle(event.user.getDisplayName());
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_profile, menu);

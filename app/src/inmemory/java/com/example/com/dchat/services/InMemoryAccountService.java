@@ -66,11 +66,15 @@ public class InMemoryAccountService extends BaseInMemoryService {
     }
 
     @Subscribe
-    public void loginWithUsername(Account.LoginWithUsernameRequest request) {
+    public void loginWithUsername(final Account.LoginWithUsernameRequest request) {
         invokeDelayed(new Runnable() {
             @Override
             public void run() {
                 Account.LoginWithUsernameResponse response = new Account.LoginWithUsernameResponse();
+
+                if(request.Username.equals("hassan"))
+                    response.setPropertyError("username", "Invalid username or password");
+
                 loginUser(response);
                 bus.post(response);
             }

@@ -28,4 +28,15 @@
         android:background="@color/primary_color_darker"
         android:id="@+id/fragment_login_loginButton"/>
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fragment_login_progress"
+        android:layout_alignTop="@id/fragment_login_loginButton"
+        android:layout_alignBottom="@id/fragment_login_loginButton"
+        android:layout_centerHorizontal="true"
+        android:indeterminateOnly="true"
+        android:visibility="gone"
+        style="?android:attr/progressBarStyleInverse"/>
+
 </RelativeLayout>

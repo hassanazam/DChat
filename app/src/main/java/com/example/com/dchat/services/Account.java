@@ -69,7 +69,7 @@ public final class Account {
         public String Password;
         public String ClientId;
 
-        public RegisterRequest(String userName, String email, String password, String CLientId) {
+        public RegisterRequest(String userName, String email, String password) {
             UserName = userName;
             Email = email;
             Password = password;
