@@ -12,6 +12,7 @@ public class InMemoryAccountService extends BaseInMemoryService {
 
     public InMemoryAccountService(DChatApplication application) {
         super(application);
+        this.application = application;
     }
 
     @Subscribe

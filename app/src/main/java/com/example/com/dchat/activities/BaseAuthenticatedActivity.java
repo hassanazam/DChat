@@ -1,6 +1,7 @@
 package com.example.com.dchat.activities;
 
 import android.content.Intent;
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
 
 public abstract class BaseAuthenticatedActivity extends BaseActivity {
@@ -9,7 +10,16 @@ public abstract class BaseAuthenticatedActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         if(!application.getAuth().getUser().isLoggedIn()) {
-            startActivity(new Intent(this, LoginActivity.class));
+
+            //if authToken is there in SharedPreferences
+            if(application.getAuth().hasAuthToken()) {
+                Intent intent = new Intent(this, AuthenticationActivity.class);
+                intent.putExtra(AuthenticationActivity.ReturnActivity, getClass().getName());
+                startActivity(intent);
+            } else {
+                startActivity(new Intent(this, LoginActivity.class));
+            }
+
             finish();
             return;
         }
